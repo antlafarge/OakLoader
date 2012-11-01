@@ -1,0 +1,22 @@
+<Oak3DModelDocument Version="1.0">
+    <ModelInfo />
+    <MaterialList Count="1">
+        <Material Name="01 - Default" Emissive="0 0 0" Ambient="0.3 0.3 0.3" Diffuse="1 1 1" Specular="0.9 0.9 0.9" SpecularLevel="0.0" Glossiness="6" Alpha="1" TextureCount="1">
+            <Texture Type="2D" Name="wood.jpg" Channel="Albedo1" Texcoord="Texcoord1" />
+		</Material>
+    </MaterialList>
+    <MeshList Count="1">
+        <Mesh Name="Box01" VertexCount="24" FaceCount="12" Material="01 - Default">
+            <BoundingBox Min="-1 -1 -1" Max="1 1 1" />
+            <Skin BoneCount="0" VertexBoneCountAttribName="BoneCount" VertexBoneIndexAttribName="BoneIndex" VertexBoneWeightAttribName="BoneWeight" />
+            <AttributeList Count="3">
+                <Attribute Name="Position" Data="-1 -1 1 1 -1 1 -1 -1 -1 1 -1 -1 -1 1 1 1 1 1 -1 1 -1 1 1 -1 -1 -1 1 -1 -1 1 1 -1 1 1 -1 1 -1 -1 -1 -1 -1 -1 1 -1 -1 1 -1 -1 -1 1 1 -1 1 1 1 1 1 1 1 1 -1 1 -1 -1 1 -1 1 1 -1 1 1 -1" />
+				<Attribute Name="Normal" Data="0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0 1 -1 0 5.96046e-008 0 0 1 1 0 0 0 0 -1 -1 0 5.96046e-008 1 0 0 0 0 -1 0 0 1 -1 0 5.96046e-008 0 0 1 1 0 0 0 0 -1 -1 0 5.96046e-008 1 0 0 0 0 -1" />
+                <Attribute Name="Texcoord1" Data="1 0 0 0 1 1 0 1 0 0 1 0 0 1 1 1 0 0 1 0 1 0 0 0 1 0 0 0 1 0 0 0 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1" />
+            </AttributeList>
+            <IndexList Count="1">
+            </IndexList>
+                <Index Name="Default" Data="0 2 3 3 1 0 4 5 7 7 6 4 8 10 18 18 16 8 11 14 22 22 19 11 15 12 20 20 23 15 13 9 17 17 21 13" />
+        </Mesh>
+    </MeshList>
+</Oak3DModelDocument>
