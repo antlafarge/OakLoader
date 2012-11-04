@@ -86,8 +86,6 @@ THREE.OAKLoader.prototype.loadAjaxJSON = function ( context, url, callback, text
 
 THREE.OAKLoader.prototype.createModel = function ( xml, callback, texturePath ) {
 
-	var loader = this;
-
 	var xmlMaterialList = xml.querySelector( "MaterialList" );
 	var xmlMaterials = xmlMaterialList.querySelectorAll( "Material" );
 	var materials = [];
@@ -123,24 +121,24 @@ THREE.OAKLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 		material.name = xmlMaterial.getAttribute( "Name" );
 		
 		var emissive = xmlMaterial.getAttribute( "Emissive" ).split(' ');
-		material.emissive.r = emissive[0];
-		material.emissive.g = emissive[1];
-		material.emissive.b = emissive[2];
+		material.emissive.r = parseFloat(emissive[0]);
+		material.emissive.g = parseFloat(emissive[1]);
+		material.emissive.b = parseFloat(emissive[2]);
 		
 		var ambient = xmlMaterial.getAttribute( "Ambient" ).split(' ');
-		material.ambient.r = ambient[0];
-		material.ambient.g = ambient[1];
-		material.ambient.b = ambient[2];
+		material.ambient.r = parseFloat(ambient[0]);
+		material.ambient.g = parseFloat(ambient[1]);
+		material.ambient.b = parseFloat(ambient[2]);
 		
 		var diffuse = xmlMaterial.getAttribute( "Diffuse" ).split(' ');
-		material.color.r = diffuse[0];
-		material.color.g = diffuse[1];
-		material.color.b = diffuse[2];
+		material.color.r = parseFloat(diffuse[0]);
+		material.color.g = parseFloat(diffuse[1]);
+		material.color.b = parseFloat(diffuse[2]);
 		
 		var specular = xmlMaterial.getAttribute( "Specular" ).split(' ');
-		material.specular.r = specular[0];
-		material.specular.g = specular[1];
-		material.specular.b = specular[2];
+		material.specular.r = parseFloat(specular[0]);
+		material.specular.g = parseFloat(specular[1]);
+		material.specular.b = parseFloat(specular[2]);
 		
 		var tex = xml.querySelector( "Texture" );
 		if ( tex )
@@ -149,12 +147,16 @@ THREE.OAKLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 			material.side = THREE.DoubleSide;
 		}
 		
+		//material.skinning = true;
+		
 		return material;
 	}
 
 	function parseMesh( xmlMesh )
 	{
 		var geometry = new THREE.Geometry();
+		
+		geometry.name = xmlMesh.getAttribute( "Name" );
 		
 		// There is only 1 material per mesh
 		var materialId = getMatIdFromName( xmlMesh.getAttribute( "Material" ) );
@@ -165,17 +167,20 @@ THREE.OAKLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 		var vertices = xmlMesh.querySelector( "Attribute[Name='Position']" ).getAttribute( "Data" ).split(' ');
 		for ( var i=0 ; i<vertices.length ; i+=3 )
 		{
-			geometry.vertices.push( new THREE.Vector3( vertices[i], vertices[i+1], vertices[i+2] ) );
+			geometry.vertices.push( new THREE.Vector3( parseFloat(vertices[i]), parseFloat(vertices[i+1]), parseFloat(vertices[i+2]) ) );
 		}
 		
 		// NORMALS
-		var normals = xmlMesh.querySelector( "Attribute[Name='Normal']" ).getAttribute( "Data" ).split(' ');
-		geometry.normals = [];
-		for ( var i=0 ; i<normals.length ; i+=3 )
+		var xmlNormal = xmlMesh.querySelector( "Attribute[Name='Normal']" );
+		if ( xmlNormal )
 		{
-			geometry.normals.push( new THREE.Vector3( normals[i], normals[i+1], normals[i+2] ) );
+			var normals = xmlNormal.getAttribute( "Data" ).split(' ');
+			geometry.normals = [];
+			for ( var i=0 ; i<normals.length ; i+=3 )
+			{
+				geometry.normals.push( new THREE.Vector3( parseFloat(normals[i]), parseFloat(normals[i+1]), parseFloat(normals[i+2]) ) );
+			}
 		}
-		//geometry.computeFaceNormals();
 		
 		// UVS
 		var texcoord1 = xmlMesh.querySelector( "Attribute[Name='Texcoord1']" );
@@ -185,7 +190,7 @@ THREE.OAKLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 			geometry.uvs = [];
 			for ( var i=0 ; i<uvs.length ; i+=2 )
 			{
-				geometry.uvs.push( new THREE.UV( uvs[i], uvs[i+1] ) );
+				geometry.uvs.push( new THREE.UV( parseFloat(uvs[i]), parseFloat(uvs[i+1]) ) );
 			}
 		}
 
@@ -194,7 +199,7 @@ THREE.OAKLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 		var n = 0;
 		for ( var i=0 ; i<indices.length ; i+=3 )
 		{
-			geometry.faces.push( new THREE.Face3( indices[i], indices[i+1], indices[i+2], geometry.normals[n], null, materialId ) );
+			geometry.faces.push( new THREE.Face3( parseFloat(indices[i]), parseFloat(indices[i+1]), parseFloat(indices[i+2]), geometry.normals[n], null, materialId ) );
 			if ( texcoord1 )
 			{
 				geometry.faceVertexUvs[0].push( [ geometry.uvs[indices[i]], geometry.uvs[indices[i+1]], geometry.uvs[indices[i+2]] ] );
@@ -228,10 +233,17 @@ THREE.OAKLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 		}
 		
 		// Post-processing
+		if ( !xmlNormal )
+		{
+			geometry.computeFaceNormals();
+		}
 		geometry.computeCentroids();
 		geometry.computeBoundingBox();
 		
-		return new THREE.Mesh( geometry, new THREE.MeshFaceMaterial() );
+		var mesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial() );
+		mesh.name = xmlMesh.getAttribute( "Name" );
+		
+		return mesh;
 	}
 	
 	function parseSkin( xmlSkin, geometry )
@@ -248,10 +260,14 @@ THREE.OAKLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 			var im = xmlBones[i].getAttribute( "InitMatrix" ).split(' ');
 			var initMatrix = new THREE.Matrix4( im[0], im[1], im[2], 0, im[3], im[4], im[5], 0, im[6], im[7], im[8], 0, im[9], im[10], im[11], 1 );
 			bone.parent = -1;
-			bone.pos = new THREE.Vector3();
-			bone.rotq = new THREE.Quaternion();
-			bone.scl = new THREE.Vector3();
-			initMatrix.decompose( bone.pos, bone.rotq, bone.scl );
+			var pos = new THREE.Vector3();
+			var rotq = new THREE.Quaternion();
+			var scl = new THREE.Vector3();
+			initMatrix.decompose( pos, rotq, scl );
+			bone.pos = [ pos.x, pos.y, pos.z ];
+			//bone.rot = [ 0, 0, 0 ];
+			bone.rotq = [ rotq.x, rotq.y, rotq.z, rotq.w ];
+			bone.scl = [ scl.x, scl.y, scl.z ];
 			geometry.bones.push( bone );
 		}
 	}

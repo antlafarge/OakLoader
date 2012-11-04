@@ -17,6 +17,7 @@
 		<script src="js/three.js"></script>
 		<script src="js/TrackballControls.js"></script>
 		<script src="../src/OAKLoader.js"></script>
+		<script src="../src/OakAnimLoader.js"></script>
 		
 		<script src="js/Detector.js"></script>
 		<script src="js/Stats.js"></script>
@@ -29,7 +30,12 @@
 
 			var camera, controls, scene, renderer;
 			
-			var mesh;
+			var object3d, animation;
+			
+			var modelLoaded = false;
+			var animLoaded = false;
+			
+			var clock = new THREE.Clock();
 
 			window.onload = init;
 
@@ -61,14 +67,48 @@
 				light = new THREE.AmbientLight( 0xffffff );
 				scene.add( light );
 
-				function processData( object3d )
+				function processModel( obj )
 				{
+					object3d = obj;
 					scene.add( object3d );
-					console.log( object3d );
+					modelLoaded = true;
+					
+					console.log( "Object3D", object3d );
+					
+					modelLoaded = true;
+					if ( animLoaded )
+					{
+						launchAnim();
+					}
 				}
 				
-				var loader = new THREE.OAKLoader();
-				loader.load( "models/panda.xml", processData );
+				var modelLoader = new THREE.OAKLoader();
+				modelLoader.load( "models/panda.xml", processModel );
+				
+				function processAnim( anim )
+				{
+					/*THREE.AnimationHandler.add( anim );
+					
+					console.log( "anim", anim );
+					
+					animLoaded = true;
+					if ( modelLoaded )
+					{
+						launchAnim();
+					}*/
+				}
+				
+				function launchAnim()
+				{
+					/*animation = new THREE.Animation( object3d, "panda_walk" );
+					//animation.offset = 0.05 * Math.random();
+					console.log( "Animation", animation );
+					animation.loop = false;
+					animation.play();*/
+				}
+				
+				var animLoader = new THREE.OakAnimLoader();
+				animLoader.load( "animations/panda_walk.xml", processAnim );
 
 				// renderer
 
@@ -104,9 +144,11 @@
 
 			}
 
-			function render() {
+			function render( a, b, c, d ) {
 
 				requestAnimationFrame( render );
+				var delta = clock.getDelta();
+				THREE.AnimationHandler.update( delta );
 				controls.update();
 				renderer.render( scene, camera );
 				stats.update();
