@@ -2,15 +2,15 @@
  * @author ant-lafarge / http://ant.lafarge.free.fr/
  */
 
-THREE.OAKLoader = function ( showStatus ) {
+THREE.OKMLoader = function ( showStatus ) {
 
 	THREE.Loader.call( this, showStatus );
 
 };
 
-THREE.OAKLoader.prototype = Object.create( THREE.Loader.prototype );
+THREE.OKMLoader.prototype = Object.create( THREE.Loader.prototype );
 
-THREE.OAKLoader.prototype.load = function ( url, callback, texturePath ) {
+THREE.OKMLoader.prototype.load = function ( url, callback, texturePath ) {
 
 	var scope = this;
 
@@ -21,7 +21,7 @@ THREE.OAKLoader.prototype.load = function ( url, callback, texturePath ) {
 
 };
 
-THREE.OAKLoader.prototype.loadAjaxJSON = function ( context, url, callback, texturePath, callbackProgress ) {
+THREE.OKMLoader.prototype.loadAjaxJSON = function ( context, url, callback, texturePath, callbackProgress ) {
 
 	var xhr = new XMLHttpRequest();
 
@@ -41,7 +41,7 @@ THREE.OAKLoader.prototype.loadAjaxJSON = function ( context, url, callback, text
 
 				} else {
 
-					console.warn( "THREE.OAKLoader: [" + url + "] seems to be unreachable or file there is empty" );
+					console.warn( "THREE.OKMLoader: [" + url + "] seems to be unreachable or file there is empty" );
 
 				}
 
@@ -53,7 +53,7 @@ THREE.OAKLoader.prototype.loadAjaxJSON = function ( context, url, callback, text
 
 			} else {
 
-				console.error( "THREE.OAKLoader: Couldn't load [" + url + "] [" + xhr.status + "]" );
+				console.error( "THREE.OKMLoader: Couldn't load [" + url + "] [" + xhr.status + "]" );
 
 			}
 
@@ -84,7 +84,7 @@ THREE.OAKLoader.prototype.loadAjaxJSON = function ( context, url, callback, text
 
 };
 
-THREE.OAKLoader.prototype.createModel = function ( xml, callback, texturePath ) {
+THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) {
 
 	var xmlMaterialList = xml.querySelector( "MaterialList" );
 	var xmlMaterials = xmlMaterialList.querySelectorAll( "Material" );
@@ -190,7 +190,7 @@ THREE.OAKLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 			geometry.uvs = [];
 			for ( var i=0 ; i<uvs.length ; i+=2 )
 			{
-				geometry.uvs.push( new THREE.UV( parseFloat(uvs[i]), parseFloat(uvs[i+1]) ) );
+				geometry.uvs.push( new THREE.UV( parseFloat(uvs[i]), 1-parseFloat(uvs[i+1]) ) );
 			}
 		}
 

@@ -2,15 +2,15 @@
  * @author ant-lafarge / http://ant.lafarge.free.fr/
  */
 
-THREE.OakAnimLoader = function ( showStatus ) {
+THREE.OKALoader = function ( showStatus ) {
 
 	THREE.Loader.call( this, showStatus );
 
 };
 
-THREE.OakAnimLoader.prototype = Object.create( THREE.Loader.prototype );
+THREE.OKALoader.prototype = Object.create( THREE.Loader.prototype );
 
-THREE.OakAnimLoader.prototype.load = function ( url, callback ) {
+THREE.OKALoader.prototype.load = function ( url, callback ) {
 
 	var scope = this;
 
@@ -19,7 +19,7 @@ THREE.OakAnimLoader.prototype.load = function ( url, callback ) {
 
 };
 
-THREE.OakAnimLoader.prototype.loadAjaxJSON = function ( context, url, callback, callbackProgress ) {
+THREE.OKALoader.prototype.loadAjaxJSON = function ( context, url, callback, callbackProgress ) {
 
 	var xhr = new XMLHttpRequest();
 
@@ -41,7 +41,7 @@ THREE.OakAnimLoader.prototype.loadAjaxJSON = function ( context, url, callback, 
 
 				} else {
 
-					console.warn( "THREE.OakAnimLoader: [" + url + "] seems to be unreachable or file there is empty" );
+					console.warn( "THREE.OKALoader: [" + url + "] seems to be unreachable or file there is empty" );
 
 				}
 
@@ -53,7 +53,7 @@ THREE.OakAnimLoader.prototype.loadAjaxJSON = function ( context, url, callback, 
 
 			} else {
 
-				console.error( "THREE.OakAnimLoader: Couldn't load [" + url + "] [" + xhr.status + "]" );
+				console.error( "THREE.OKALoader: Couldn't load [" + url + "] [" + xhr.status + "]" );
 
 			}
 
@@ -84,7 +84,7 @@ THREE.OakAnimLoader.prototype.loadAjaxJSON = function ( context, url, callback, 
 
 };
 
-THREE.OakAnimLoader.prototype.createAnimation = function ( xml, animName, callback ) {
+THREE.OKALoader.prototype.createAnimation = function ( xml, animName, callback ) {
 
 	var anim = {};
 	
