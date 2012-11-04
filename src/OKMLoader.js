@@ -147,8 +147,6 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 			material.side = THREE.DoubleSide;
 		}
 		
-		//material.skinning = true;
-		
 		return material;
 	}
 
@@ -158,10 +156,17 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 		
 		geometry.name = xmlMesh.getAttribute( "Name" );
 		
+		var xmlSkin = xmlMesh.querySelector( "Skin" );
+		var skinning = ( xmlSkin && parseFloat( xmlSkin.getAttribute( "BoneCount" ) ) > 0 ? true : false );
 		// There is only 1 material per mesh
 		var materialId = getMatIdFromName( xmlMesh.getAttribute( "Material" ) );
-		geometry.materials.push( materials[materialId] );
+		var material = materials[materialId];
+		geometry.materials.push( material );
 		materialId = 0;
+		if ( skinning )
+		{
+			material.skinning = true;
+		}
 	
 		// VERTICES
 		var vertices = xmlMesh.querySelector( "Attribute[Name='Position']" ).getAttribute( "Data" ).split(' ');
@@ -207,28 +212,31 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 			n++;
 		}
 		
-		// BONES
-		parseSkin( xmlMesh.querySelector( "Skin" ), geometry );
-		
-		// SKININDEX
-		var xmlBoneIndex = xmlMesh.querySelector( "Attribute[Name='BoneIndex']" );
-		if ( xmlBoneIndex )
+		if ( skinning )
 		{
-			var bi = xmlBoneIndex.getAttribute( "Data" ).split(' ');
-			for ( var i=0 ; i < bi.length ; i+=4 )
+			// BONES
+			parseSkin( xmlMesh.querySelector( "Skin" ), geometry );
+			
+			// SKININDEX
+			var xmlBoneIndex = xmlMesh.querySelector( "Attribute[Name='BoneIndex']" );
+			if ( xmlBoneIndex )
 			{
-				geometry.skinIndices.push( new THREE.Vector4( parseFloat(bi[0]), parseFloat(bi[1]), parseFloat(bi[2]), parseFloat(bi[3]) ) );
+				var bi = xmlBoneIndex.getAttribute( "Data" ).split(' ');
+				for ( var i=0 ; i < bi.length ; i+=4 )
+				{
+					geometry.skinIndices.push( new THREE.Vector4( parseFloat(bi[0]), parseFloat(bi[1]), parseFloat(bi[2]), parseFloat(bi[3]) ) );
+				}
 			}
-		}
-		
-		// SKINWEIGHT
-		var xmlBoneWeight = xmlMesh.querySelector( "Attribute[Name='BoneWeight']" );
-		if ( xmlBoneWeight )
-		{
-			var bw = xmlBoneWeight.getAttribute( "Data" ).split(' ');
-			for ( var i=0 ; i < bw.length ; i+=4 )
+			
+			// SKINWEIGHT
+			var xmlBoneWeight = xmlMesh.querySelector( "Attribute[Name='BoneWeight']" );
+			if ( xmlBoneWeight )
 			{
-				geometry.skinWeights.push( new THREE.Vector4( parseFloat(bw[0]), parseFloat(bw[1]), parseFloat(bw[2]), parseFloat(bw[3]) ) );
+				var bw = xmlBoneWeight.getAttribute( "Data" ).split(' ');
+				for ( var i=0 ; i < bw.length ; i+=4 )
+				{
+					geometry.skinWeights.push( new THREE.Vector4( parseFloat(bw[0]), parseFloat(bw[1]), parseFloat(bw[2]), parseFloat(bw[3]) ) );
+				}
 			}
 		}
 		
@@ -240,7 +248,15 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 		geometry.computeCentroids();
 		geometry.computeBoundingBox();
 		
-		var mesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial() );
+		var mesh;
+		if ( skinning )
+		{
+			mesh = new THREE.SkinnedMesh( geometry, new THREE.MeshFaceMaterial() );
+		}
+		else
+		{
+			mesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial() );
+		}
 		mesh.name = xmlMesh.getAttribute( "Name" );
 		
 		return mesh;
