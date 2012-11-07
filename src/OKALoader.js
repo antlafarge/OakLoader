@@ -94,7 +94,7 @@ THREE.OKALoader.prototype.createAnimation = function ( xml, animName, callback )
 	if ( ! tick )
 		tick = parseFloat( xmlKeyFrameList.getAttribute( "FrameTime" ) );
 	var keyCount = parseFloat( xmlKeyFrameList.getAttribute( "KeyCount" ) );
-	anim.length = keyCount * tick / 1000;
+	anim.length = ( keyCount- 1 ) * tick / 1000;
 	anim.fps = keyCount / anim.length;
 	anim.hierarchy = [];
 	

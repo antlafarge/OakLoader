@@ -224,7 +224,12 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 				var bi = xmlBoneIndex.getAttribute( "Data" ).split(' ');
 				for ( var i=0 ; i < bi.length ; i+=4 )
 				{
-					geometry.skinIndices.push( new THREE.Vector4( parseFloat(bi[0]), parseFloat(bi[1]), parseFloat(bi[2]), parseFloat(bi[3]) ) );
+					var si0 = treatSkinIndex( parseFloat(bi[0]) );
+					var si1 = treatSkinIndex( parseFloat(bi[1]) );
+					var si2 = treatSkinIndex( parseFloat(bi[2]) );
+					var si3 = treatSkinIndex( parseFloat(bi[3]) );
+					//geometry.skinIndices.push( new THREE.Vector4( si0, si1, si2, si3 ) );
+					geometry.skinIndices.push( new THREE.Vector4( si0, si1, 0, 0 ) );
 				}
 			}
 			
@@ -235,9 +240,17 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 				var bw = xmlBoneWeight.getAttribute( "Data" ).split(' ');
 				for ( var i=0 ; i < bw.length ; i+=4 )
 				{
-					geometry.skinWeights.push( new THREE.Vector4( parseFloat(bw[0]), parseFloat(bw[1]), parseFloat(bw[2]), parseFloat(bw[3]) ) );
+					//geometry.skinWeights.push( new THREE.Vector4( parseFloat(bw[0]), parseFloat(bw[1]), parseFloat(bw[2]), parseFloat(bw[3]) ) );
+					geometry.skinWeights.push( new THREE.Vector4( parseFloat(bw[0]), parseFloat(bw[1]), 0, 0 ) );
 				}
 			}
+		}
+		
+		function treatSkinIndex( skinIndex )
+		{
+			if ( skinIndex == -1 )
+				return 0;
+			return skinIndex;
 		}
 		
 		// Post-processing
@@ -282,7 +295,8 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 			initMatrix.decompose( pos, rotq, scl );
 			bone.pos = [ pos.x, pos.y, pos.z ];
 			//bone.rot = [ 0, 0, 0 ];
-			bone.rotq = [ rotq.x, rotq.y, rotq.z, rotq.w ];
+			//bone.rotq = [ rotq.x, rotq.y, rotq.z, rotq.w ];
+			bone.rotq = [ rotq.w, rotq.x, rotq.y, rotq.z ];
 			bone.scl = [ scl.x, scl.y, scl.z ];
 			geometry.bones.push( bone );
 		}
