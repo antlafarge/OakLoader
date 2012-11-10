@@ -1,41 +1,85 @@
 AnimationUtils = {};
 
-AnimationUtils.createSkeleton = function( skinnedMesh )
+AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
 {
-	var boneSize = 2;
-	var skeletonGeometry = new THREE.Geometry();
-	skeletonGeometry.bones = [];
+	console.log( skinnedMesh.geometry.bones );
+	// Construct the bones hierarchy with objects
+	var iii = {};
+	var root = new THREE.Object3D();
+	iii[-1] = root;
+	root.name = "root";
+	root.position.set( skinnedMesh.position.x, skinnedMesh.position.y, skinnedMesh.position.z );
+	root.rotation.set( skinnedMesh.rotation.x, skinnedMesh.rotation.y, skinnedMesh.rotation.z );
+	root.quaternion.set( skinnedMesh.quaternion.x, skinnedMesh.quaternion.y, skinnedMesh.quaternion.z, skinnedMesh.quaternion.w );
+	root.scale.set( skinnedMesh.scale.x, skinnedMesh.scale.y, skinnedMesh.scale.z );
+	root.useQuaternion = true;
+
 	for ( var i=0 ; i < skinnedMesh.geometry.bones.length ; i++ )
 	{
-		// get bone
 		var bone = skinnedMesh.geometry.bones[i];
-		// Create bone cube
-		var boneGeometry = new THREE.CubeGeometry( boneSize,boneSize,boneSize );
-		var boneMesh = new THREE.Mesh( boneGeometry );
-		boneMesh.position.set( bone.pos[0], bone.pos[1], bone.pos[2] );
-		boneMesh.useQuaternion = true;
-		boneMesh.quaternion.set( bone.rotq[1], bone.rotq[2], bone.rotq[3], bone.rotq[0] );
-		//boneMesh.rotation.set( bone.rot[0], bone.rot[1], bone.rot[2] );
-		boneMesh.scale.set( bone.scl[0], bone.scl[1], bone.scl[2] );
-		// Merge bone cube in skeleton
-		THREE.GeometryUtils.merge( skeletonGeometry, boneMesh );
-		// Add bone to skeleton
-		skeletonGeometry.bones.push( bone );
-		// set skinIndex and skinWeight to just added cube in skeleton
-		var sl = skeletonGeometry.skinIndices.length;
-		var vl = skeletonGeometry.vertices.length;
-		for ( var j=0 ; j < vl ; j++ )
+
+		var obj = new THREE.Object3D();
+		obj.name = bone.name;
+
+		obj.position.set( bone.pos[0], bone.pos[1], bone.pos[2] );
+		if ( bone.rotq )
 		{
-			if ( j >= sl )
-			{
-				skeletonGeometry.skinIndices.push( new THREE.Vector4( i,0,0,0 ) );
-				skeletonGeometry.skinWeights.push( new THREE.Vector4( 1,0,0,0 ) );
-			}
+			obj.quaternion.set( bone.rotq[0], bone.rotq[1], bone.rotq[2], bone.rotq[3] );
+			obj.useQuaternion = true;
+		}
+		else
+		{
+			obj.rotation.set( bone.rot[0], bone.rot[1], bone.rot[2] );
+		}
+		obj.scale.set( bone.scl[0], bone.scl[1], bone.scl[2] );
+
+		iii[ bone.parent ].add( obj );
+		iii[ i ] = obj;
+	}
+
+	// Create skeleton by using hiererchy
+	var skeletonGeometry = new THREE.Geometry();
+	skeletonGeometry.materials.push( new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe: true, transparent: false, opacity: 1, side: THREE.DoubleSide } ) );
+
+	function treatChild( obj )
+	{
+		// Retrieve the bone position
+		obj.updateMatrix();
+		obj.updateMatrixWorld();
+		var position = obj.matrixWorld.getPosition().clone();
+
+		// BONE
+		// Create and merge the bone as a shpere in the skeleton
+		var boneMesh = new THREE.Mesh( new THREE.SphereGeometry( boneScale,8,8 ), new THREE.MeshFaceMaterial() );
+		boneMesh.geometry.materials.push( new THREE.MeshBasicMaterial({color:0xff0000}) );
+		for ( var i=0 ; i < boneMesh.geometry.faces.length ; i++ )
+		{
+			boneMesh.geometry.faces[ i ].materialIndex = 0;
+		}
+		boneMesh.position.set( position.x, position.y, position.z );
+		THREE.GeometryUtils.merge( skeletonGeometry, boneMesh );
+
+		// process recursively the children
+		for ( var i=0 ; i < obj.children.length ; i++ )
+		{
+			var child = obj.children[i];
+			var childPosition = child.matrixWorld.getPosition().clone();
+
+			var vl = skeletonGeometry.vertices.length;
+			skeletonGeometry.vertices.push( position.clone(), childPosition.clone() );
+			skeletonGeometry.faces.push( new THREE.Face3( vl, vl, vl+1, null, null, 0 ) );
+
+			treatChild( child );
 		}
 	}
-	var skeletonMesh = new THREE.SkinnedMesh( skeletonGeometry, new THREE.MeshLambertMaterial() );
-	skeletonMesh.material.skinning = true;
-	//skeletonMesh.material.ambient.setHex( 0xff0000 );
-	console.log( "ske", skeletonMesh );
-	return skeletonMesh;
+
+	for ( var i=0 ; i < root.children.length ; i++ )
+	{
+		treatChild( root.children[i] );
+	}
+
+	var skeleton = new THREE.Mesh( skeletonGeometry, new THREE.MeshFaceMaterial() );
+	skeleton.name = skinnedMesh.name + "_skeleton";
+
+	return skeleton;
 }
