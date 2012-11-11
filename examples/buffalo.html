@@ -69,20 +69,24 @@
 
 					originalMaterial.skinning = true;
 					originalMaterial.transparent = true;
-					originalMaterial.opacity = 0.3;
+					originalMaterial.opacity = 0.5;
 
 					THREE.AnimationHandler.add( geometry.animation );
 
 					buffalo = new THREE.SkinnedMesh( geometry, new THREE.MeshFaceMaterial(), false );
-
-					scene.add( buffalo );
+					var skeleton = AnimationUtils.createSkeleton( buffalo, 2 );
 
 					animation = new THREE.Animation( buffalo, "take_001" );
+					animation2 = new THREE.Animation( skeleton, "take_001" );
 
-					var skeleton = AnimationUtils.createSkeleton( buffalo, 2 );
+					console.log( "buffalo", buffalo );
+					console.log( "skeleton", skeleton );
+
+					scene.add( buffalo );
 					scene.add( skeleton );
 
-					//animation.play();
+					animation.play();
+					animation2.play();
 				}
 				
 				var loader = new THREE.JSONLoader();
