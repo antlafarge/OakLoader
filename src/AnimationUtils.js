@@ -2,7 +2,6 @@ AnimationUtils = {};
 
 AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
 {
-	console.log( skinnedMesh.geometry.bones );
 	// Construct the bones hierarchy with objects
 	var iii = {};
 	var root = new THREE.Object3D();
@@ -20,6 +19,8 @@ AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
 
 		var obj = new THREE.Object3D();
 		obj.name = bone.name;
+		obj.bone = bone;
+		obj.boneId = i;
 
 		obj.position.set( bone.pos[0], bone.pos[1], bone.pos[2] );
 		if ( bone.rotq )
@@ -39,7 +40,24 @@ AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
 
 	// Create skeleton by using hiererchy
 	var skeletonGeometry = new THREE.Geometry();
-	skeletonGeometry.materials.push( new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe: true, transparent: false, opacity: 1, side: THREE.DoubleSide } ) );
+	skeletonGeometry.bones = [];
+	skeletonGeometry.skinIndices = [];
+	skeletonGeometry.skinWeights = [];
+	skeletonGeometry.materials.push( new THREE.MeshLambertMaterial( { ambient:0xffffff, wireframe:true, skinning:true } ) );
+
+	// Copy bones
+	for ( var i=0 ; i < skinnedMesh.bones.length ; i++ )
+	{
+		var bone = skinnedMesh.geometry.bones[ i ];
+		var bone2 = {};
+		bone2.name = bone.name;
+		bone2.parent = bone.parent;
+		bone2.pos = [ bone.pos[0], bone.pos[1], bone.pos[2] ];
+		bone2.rot = [ bone.rot[0], bone.rot[1], bone.rot[2] ];
+		bone2.rotq = [ bone.rotq[0], bone.rotq[1], bone.rotq[2], bone.rotq[3] ];
+		bone2.scl = [ bone.scl[0], bone.scl[1], bone.scl[2] ];
+		skeletonGeometry.bones.push( bone2 );
+	}
 
 	function treatChild( obj )
 	{
@@ -51,23 +69,34 @@ AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
 		// BONE
 		// Create and merge the bone as a shpere in the skeleton
 		var boneMesh = new THREE.Mesh( new THREE.SphereGeometry( boneScale,8,8 ), new THREE.MeshFaceMaterial() );
-		boneMesh.geometry.materials.push( new THREE.MeshBasicMaterial({color:0xff0000}) );
+		boneMesh.geometry.materials.push( new THREE.MeshLambertMaterial( {ambient:0xff0000, skinning:true} ) );
 		for ( var i=0 ; i < boneMesh.geometry.faces.length ; i++ )
 		{
 			boneMesh.geometry.faces[ i ].materialIndex = 0;
 		}
 		boneMesh.position.set( position.x, position.y, position.z );
 		THREE.GeometryUtils.merge( skeletonGeometry, boneMesh );
+		// create skinIndices and skinWeights for sphereGeometry
+		for ( var i=0 ; i < boneMesh.geometry.vertices.length ; i++ )
+		{
+			skeletonGeometry.skinIndices.push( new THREE.Vector4( obj.boneId,0,0,0 ) );
+			skeletonGeometry.skinWeights.push( new THREE.Vector4( 1,0,0,0 ) );
+		}
 
 		// process recursively the children
 		for ( var i=0 ; i < obj.children.length ; i++ )
 		{
+			// LINK
 			var child = obj.children[i];
 			var childPosition = child.matrixWorld.getPosition().clone();
 
 			var vl = skeletonGeometry.vertices.length;
 			skeletonGeometry.vertices.push( position.clone(), childPosition.clone() );
 			skeletonGeometry.faces.push( new THREE.Face3( vl, vl, vl+1, null, null, 0 ) );
+			skeletonGeometry.skinIndices.push( new THREE.Vector4( obj.boneId,0,0,0 ) );
+			skeletonGeometry.skinWeights.push( new THREE.Vector4( 1,0,0,0 ) );
+			skeletonGeometry.skinIndices.push( new THREE.Vector4( child.boneId,0,0,0 ) );
+			skeletonGeometry.skinWeights.push( new THREE.Vector4( 1,0,0,0 ) );
 
 			treatChild( child );
 		}
@@ -78,7 +107,7 @@ AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
 		treatChild( root.children[i] );
 	}
 
-	var skeleton = new THREE.Mesh( skeletonGeometry, new THREE.MeshFaceMaterial() );
+	var skeleton = new THREE.SkinnedMesh( skeletonGeometry, new THREE.MeshFaceMaterial() );
 	skeleton.name = skinnedMesh.name + "_skeleton";
 
 	return skeleton;
