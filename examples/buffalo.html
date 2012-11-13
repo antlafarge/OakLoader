@@ -30,6 +30,7 @@
 			var camera, controls, scene, renderer;
 			
 			var buffalo, animation;
+			var skeleton, animationSkeleton;
 			
 			var modelLoaded = false;
 			var animLoaded = false;
@@ -50,7 +51,7 @@
 				controls.dynamicDampingFactor = 0.3;
 				controls.keys = [ 65, 83, 68 ];
 
-				// world6
+				// world
 
 				scene = new THREE.Scene();
 				
@@ -62,35 +63,6 @@
 
 				light = new THREE.AmbientLight( 0xffffff );
 				scene.add( light );
-
-				function processModel( geometry )
-				{
-					var originalMaterial = geometry.materials[ 0 ];
-
-					originalMaterial.skinning = true;
-					originalMaterial.transparent = true;
-					originalMaterial.opacity = 0.5;
-
-					THREE.AnimationHandler.add( geometry.animation );
-
-					buffalo = new THREE.SkinnedMesh( geometry, new THREE.MeshFaceMaterial(), false );
-					var skeleton = AnimationUtils.createSkeleton( buffalo, 2 );
-
-					animation = new THREE.Animation( buffalo, "take_001" );
-					animation2 = new THREE.Animation( skeleton, "take_001" );
-
-					console.log( "buffalo", buffalo );
-					console.log( "skeleton", skeleton );
-
-					scene.add( buffalo );
-					scene.add( skeleton );
-
-					animation.play();
-					animation2.play();
-				}
-				
-				var loader = new THREE.JSONLoader();
-				loader.load( "models/buffalo.js", processModel );
 
 				// renderer
 
@@ -106,7 +78,34 @@
 				stats.domElement.style.zIndex = 100;
 				container.appendChild( stats.domElement );
 
-				//
+				function processModel( geometry )
+				{
+					var originalMaterial = geometry.materials[ 0 ];
+
+					originalMaterial.skinning = true;
+					originalMaterial.transparent = true;
+					originalMaterial.opacity = 0.5;
+
+					THREE.AnimationHandler.add( geometry.animation );
+
+					buffalo = new THREE.SkinnedMesh( geometry, new THREE.MeshFaceMaterial(), false );
+					skeleton = AnimationUtils.createSkeleton( buffalo, 2 );
+
+					animation = new THREE.Animation( buffalo, "take_001" );
+					animationSkeleton = new THREE.Animation( skeleton, "take_001" );
+
+					console.log( "buffalo", buffalo );
+					console.log( "skeleton", skeleton );
+
+					scene.add( buffalo );
+					scene.add( skeleton );
+
+					animation.play();
+					animationSkeleton.play();
+				}
+				
+				var loader = new THREE.JSONLoader();
+				loader.load( "models/buffalo.js", processModel );
 
 				window.addEventListener( 'resize', onWindowResize, false );
 
@@ -126,7 +125,7 @@
 
 			}
 
-			function render( a, b, c, d ) {
+			function render() {
 
 				requestAnimationFrame( render );
 				var delta = clock.getDelta();

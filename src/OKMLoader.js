@@ -153,6 +153,7 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 	function parseMesh( xmlMesh )
 	{
 		var geometry = new THREE.Geometry();
+		var material = null;
 		
 		geometry.name = xmlMesh.getAttribute( "Name" );
 		
@@ -160,12 +161,19 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 		var skinning = ( xmlSkin && parseFloat( xmlSkin.getAttribute( "BoneCount" ) ) > 0 ? true : false );
 		// There is only 1 material per mesh
 		var materialId = getMatIdFromName( xmlMesh.getAttribute( "Material" ) );
-		var material = materials[materialId];
-		geometry.materials.push( material );
-		materialId = 0;
-		if ( skinning )
+		if ( materialId === -1 )
 		{
-			material.skinning = true;
+			material = new THREE.MeshNormalMaterial();
+		}
+		else
+		{
+			material = materials[ materialId ];
+			geometry.materials.push( material );
+			materialId = 0;
+			if ( skinning )
+			{
+				material.skinning = true;
+			}
 		}
 	
 		// VERTICES
@@ -200,7 +208,16 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 		}
 
 		// INDICES / FACES
-		var indices = xmlMesh.querySelector( "Index[Name='Default']" ).getAttribute( "Data" ).split(' ');
+		var indices = null;
+		var xmlIndices = xmlMesh.querySelector( "Index[Name='Default']" );
+		if ( xmlIndices )
+		{
+			indices = xmlIndices.getAttribute( "Data" ).split(' ');
+		}
+		else
+		{
+			indices = xmlMesh.querySelector( "FaceIndex" ).getAttribute( "Data" ).split(' ');
+		}
 		var n = 0;
 		for ( var i=0 ; i<indices.length ; i+=3 )
 		{
@@ -260,15 +277,15 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 		}
 		geometry.computeCentroids();
 		geometry.computeBoundingBox();
-		
+
 		var mesh;
 		if ( skinning )
 		{
-			mesh = new THREE.SkinnedMesh( geometry, new THREE.MeshFaceMaterial() );
+			mesh = new THREE.SkinnedMesh( geometry, material );
 		}
 		else
 		{
-			mesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial() );
+			mesh = new THREE.Mesh( geometry, material );
 		}
 		mesh.name = xmlMesh.getAttribute( "Name" );
 		
@@ -289,6 +306,7 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 			var im = xmlBones[i].getAttribute( "InitMatrix" ).split(' ');
 			//var initMatrix = new THREE.Matrix4( im[0], im[1], im[2], 0, im[3], im[4], im[5], 0, im[6], im[7], im[8], 0, im[9], im[10], im[11], 1 );
 			var initMatrix = new THREE.Matrix4( im[0],im[3],im[6],im[9], im[1],im[4],im[7],im[10], im[2],im[5],im[8],im[11], 0,0,0,1 );
+			//initMatrix.rotateY( Math.PI );
 			bone.parent = -1;
 			var pos = new THREE.Vector3();
 			var rotq = new THREE.Quaternion();
@@ -298,7 +316,8 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 			//bone.rot = [ 0, 0, 0 ];
 			//bone.rotq = [ rotq.x, rotq.y, rotq.z, rotq.w ];
 			bone.rotq = [ rotq.w, rotq.x, rotq.y, rotq.z ];
-			bone.scl = [ scl.x, scl.y, scl.z ];
+			//bone.scl = [ scl.x, scl.y, scl.z ];
+			bone.scl = [ 1,1,1 ];
 			geometry.bones.push( bone );
 		}
 	}
