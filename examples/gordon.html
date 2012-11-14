@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>OakLoader for three.js</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body { color:#000; font-family:Monospace; font-size:13px; text-align:center; background-color:#000; margin:0px; overflow:hidden; }
+			#info { position:absolute; top:0px; width:100%; padding: 5px; }
+			a { color:#f00; }
+		</style>
+	</head>
+	<body>
+
+		<div id="container"></div>
+
+		<script src="js/three.js"></script>
+		<script src="js/TrackballControls.js"></script>
+		<script src="../src/OKMLoader.js"></script>
+		<script src="../src/OKALoader.js"></script>
+		<script src="../src/AnimationUtils.js"></script>
+		
+		<script src="js/Detector.js"></script>
+		<script src="js/Stats.js"></script>
+		
+		<script>
+		
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+			var container, stats;
+
+			var camera, controls, scene, renderer;
+			
+			var anim, animation;
+			var object3d, gordon, combi, head;
+			
+			var modelLoaded = false;
+			var animLoaded = false;
+			
+			var clock = new THREE.Clock();
+
+			window.onload = init;
+
+			function init() {
+
+				camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.01, 1000 );
+				camera.position.set( 40, 40, 70 );
+
+				controls = new THREE.TrackballControls( camera );
+				controls.rotateSpeed = 1.0;
+				controls.zoomSpeed = 1.2;
+				controls.panSpeed = 0.8;
+				controls.dynamicDampingFactor = 0.3;
+				controls.keys = [ 65, 83, 68 ];
+
+				// world
+
+				scene = new THREE.Scene();
+				
+				var grid = new THREE.Mesh( new THREE.PlaneGeometry( 10, 10, 10, 10 ), new THREE.MeshBasicMaterial( { wireframe:true, color:0x000000 } ) );
+				grid.rotation.x = -Math.PI/2;
+				scene.add( grid );
+
+				// lights
+
+				light = new THREE.AmbientLight( 0xffffff );
+				scene.add( light );
+
+				function processModel( myObject3d )
+				{
+					object3d = myObject3d;
+
+					combi = object3d.children[0];
+					head = object3d.children[1];
+
+					var gordonGeometry = new THREE.Geometry();
+					AnimationUtils.merge( gordonGeometry, combi.geometry );
+					AnimationUtils.merge( gordonGeometry, head.geometry );
+					gordon = new THREE.SkinnedMesh( gordonGeometry, new THREE.MeshFaceMaterial() );
+					gordon.name = gordonGeometry.name;
+
+					combi.geometry.materials[0].transparent = true;
+					combi.geometry.materials[0].opacity = 0.5;
+					head.geometry.materials[0].transparent = true;
+					head.geometry.materials[0].opacity = 0.5;
+					
+					modelLoaded = true;
+					if ( animLoaded )
+					{
+						processAll();
+					}
+				}
+				
+				var modelLoader = new THREE.OKMLoader();
+				modelLoader.load( "models/gordon2.OKM", processModel, "textures" );
+				
+				function processAnim( animJson )
+				{
+					anim = animJson;
+					THREE.AnimationHandler.add( anim );
+					
+					console.log( "anim", anim );
+					
+					animLoaded = true;
+					if ( modelLoaded )
+					{
+						processAll();
+					}
+				}
+				
+				function processAll()
+				{
+					AnimationUtils.retrieveParents( gordon.geometry, anim );
+
+					var skeleton = AnimationUtils.createSkeleton( gordon, 0.5 );
+
+
+					scene.add( gordon );
+					scene.add( skeleton );
+					
+					animation = new THREE.Animation( object3d, "gordon_idle" );
+					//animation.play();
+
+					console.log( "gordon", gordon );
+					console.log( "skeleton", skeleton );
+					console.log( "Animation", animation );
+				}
+				
+				var animLoader = new THREE.OKALoader();
+				animLoader.load( "animations/gordon_idle.OKA", processAnim );
+
+				// renderer
+
+				renderer = new THREE.WebGLRenderer( { clearColor: 0x7f7f7f, clearAlpha: 1, antialias: false } );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				container = document.getElementById( 'container' );
+				container.appendChild( renderer.domElement );
+
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				stats.domElement.style.zIndex = 100;
+				container.appendChild( stats.domElement );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+				render();
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				controls.handleResize();
+
+				render();
+
+			}
+
+			function render() {
+
+				requestAnimationFrame( render );
+				var delta = clock.getDelta();
+				THREE.AnimationHandler.update( delta );
+				controls.update();
+				renderer.render( scene, camera );
+				stats.update();
+
+			}
+
+		</script>
+
+	</body>
+</html>
+

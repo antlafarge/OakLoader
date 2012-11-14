@@ -19,7 +19,8 @@ AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
 	// Create Object3D
 	for ( var i=0 ; i < skinnedMesh.geometry.bones.length ; i++ )
 	{
-		var bone = skinnedMesh.geometry.bones[i];
+		var bone = skinnedMesh.geometry.bones[ i ];
+		var parent = skinnedMesh.geometry.bones[ bone.parent ];
 
 		var obj = new THREE.Object3D();
 		obj.name = bone.name;
@@ -159,12 +160,11 @@ AnimationUtils.mergeBones = function( geometry1, geometry2 )
 		geometry1.skinWeights = [];
 	}
 
-	var bl, GB = [];//, Name_Index = {};
+	var bl, GB = [];
 	bl = geometry1.bones.length;
 	for ( var i=0 ; i < bl ; i++ )
 	{
 		GB.push( geometry1.bones[i].name );
-		//Name_Index[ geometry1.bones[i].name ] = i;
 	}
 
 	bl = geometry2.bones.length;
@@ -173,47 +173,6 @@ AnimationUtils.mergeBones = function( geometry1, geometry2 )
 		if ( GB.indexOf(geometry2.bones[i].name) == -1 )
 			geometry1.bones.push( geometry2.bones[i] );
 	}
-
-	//console.log( GB );
-	//console.log( Name_Index );
-	/*
-	var offset = geometry1.bones.length;
-	
-	// BONES
-	for( var i=0 ; i < geometry2.bones.length ; i++ )
-	{
-		var bid = getBoneIdFromName( geometry1.bones, geometry2.bones[i].name )
-		if ( bid != -1 )
-		{
-			console.log( "found", geometry2.bones[i].name );
-		}
-		var bone = geometry2.bones[ i ];
-		geometry1.bones.push( bone );
-		if ( bone.parent != -1 )
-			bone.parent += offset;
-	}
-	
-	var reindexedBones = mergeIndexedValues( geometry1.bones, compareBones );
-	console.log( "reindexed", reindexedBones );
-	
-	// skinIndices
-	//var maxSkinId = geometry1.skinWeights.length;
-	var newSkinIndices = [];
-	for ( var i=0 ; i < geometry2.skinIndices.length ; i++ )
-	{
-		console.log( geometry2.skinIndices[ i ] )
-		var skinIndexCopy = geometry2.skinIndices[ i ].clone();
-		skinIndexCopy.x += offset;
-		skinIndexCopy.y += offset;
-		//skinIndexCopy.z += offset;
-		//skinIndexCopy.w += offset;
-		newSkinIndices.push( skinIndexCopy );
-	}
-	geometry1.skinIndices = geometry1.skinIndices.concat( newSkinIndices );
-	
-	// skinWeights
-	geometry1.skinWeights = geometry1.skinWeights.concat( geometry2.skinWeights );
-	*/
 
 	function treatSkinIndex( skinIndex )
 	{
@@ -232,13 +191,12 @@ AnimationUtils.mergeBones = function( geometry1, geometry2 )
 		geometry1.skinIndices.push( v4 );
 	}
 
-	//geometry1.skinIndices = geometry1.skinIndices.concat( geometry2.skinIndices );
-	
 	geometry1.skinWeights = geometry1.skinWeights.concat( geometry2.skinWeights );
 }
 
 AnimationUtils.retrieveParents = function( geometry, anim )
 {
+	// Retrieve parent bones
 	var Name_Bone = {};
 
 	var bl = geometry.bones.length;
@@ -259,6 +217,8 @@ AnimationUtils.retrieveParents = function( geometry, anim )
 		{
 			boneM = {};
 			boneM.name = boneA.name;
+			boneM.initMatrix = new THREE.Matrix4();
+			boneM.invInitMatrix = new THREE.Matrix4();
 			boneM.pos = [ 0,0,0 ];
 			boneM.rotq = [ 1,0,0,0 ];
 			boneM.scl = [ 1,1,1 ];
@@ -267,6 +227,32 @@ AnimationUtils.retrieveParents = function( geometry, anim )
 		geometry.bones.push( boneM );
 	}
 
+	// Compute local matrix from bone initMatrix and parent initMatrix
+	for ( var i=0 ; i < geometry.bones.length ; i++ )
+	{
+		var bone = geometry.bones[ i ];
+
+		var parent = geometry.bones[ bone.parent ];
+
+		if ( parent )
+		{
+			bone.mat = parent.initMatrix.clone();
+			bone.mat.multiplySelf( bone.invInitMatrix );
+		}
+		else
+		{
+			bone.mat = bone.invInitMatrix.clone();
+		}
+
+		// Extract components
+		var pos = new THREE.Vector3();
+		var rotq = new THREE.Quaternion();
+		var scl = new THREE.Vector3();
+		bone.mat.decompose( pos, rotq, scl );
+		bone.pos = [ pos.x, pos.y, pos.z ];
+		bone.rotq = [ rotq.x, rotq.y, rotq.z, rotq.w ];
+		bone.scl = [ 1,1,1 ];
+	}
 }
 
 function getBoneIdFromName( bones, name )

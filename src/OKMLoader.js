@@ -144,7 +144,6 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 		if ( tex )
 		{
 			material.map = THREE.ImageUtils.loadTexture( texturePath + '/' + tex.getAttribute("Name") );
-			//material.side = THREE.DoubleSide;
 		}
 		
 		return material;
@@ -304,20 +303,15 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 			var bone = {};
 			bone.name = xmlBones[i].getAttribute( "Name" );
 			var im = xmlBones[i].getAttribute( "InitMatrix" ).split(' ');
-			//var initMatrix = new THREE.Matrix4( im[0], im[1], im[2], 0, im[3], im[4], im[5], 0, im[6], im[7], im[8], 0, im[9], im[10], im[11], 1 );
-			var initMatrix = new THREE.Matrix4( im[0],im[3],im[6],im[9], im[1],im[4],im[7],im[10], im[2],im[5],im[8],im[11], 0,0,0,1 );
-			//initMatrix.rotateY( Math.PI );
+
+			bone.initMatrix = new THREE.Matrix4( im[0],im[3],im[6],im[9], im[1],im[4],im[7],im[10], im[2],im[5],im[8],im[11], 0,0,0,1 );
+			bone.invInitMatrix = new THREE.Matrix4().getInverse( bone.initMatrix );
+
 			bone.parent = -1;
-			var pos = new THREE.Vector3();
-			var rotq = new THREE.Quaternion();
-			var scl = new THREE.Vector3();
-			initMatrix.decompose( pos, rotq, scl );
-			bone.pos = [ pos.x, pos.y, pos.z ];
-			//bone.rot = [ 0, 0, 0 ];
-			//bone.rotq = [ rotq.x, rotq.y, rotq.z, rotq.w ];
-			bone.rotq = [ rotq.w, rotq.x, rotq.y, rotq.z ];
-			//bone.scl = [ scl.x, scl.y, scl.z ];
+			bone.pos = [ 0, 0, 0 ];
+			bone.rotq = [ 0, 0, 0, 1 ];
 			bone.scl = [ 1,1,1 ];
+
 			geometry.bones.push( bone );
 		}
 	}
