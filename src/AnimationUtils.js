@@ -1,3 +1,7 @@
+/**
+ * @author ant-lafarge / http://ant.lafarge.free.fr/
+ */
+
 AnimationUtils = {};
 
 AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
