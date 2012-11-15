@@ -121,21 +121,25 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 		material.name = xmlMaterial.getAttribute( "Name" );
 		
 		var emissive = xmlMaterial.getAttribute( "Emissive" ).split(' ');
+		emissive = emissive.map( parseFloat );
 		material.emissive.r = parseFloat(emissive[0]);
 		material.emissive.g = parseFloat(emissive[1]);
 		material.emissive.b = parseFloat(emissive[2]);
 		
 		var ambient = xmlMaterial.getAttribute( "Ambient" ).split(' ');
+		ambient = ambient.map( parseFloat );
 		material.ambient.r = parseFloat(ambient[0]);
 		material.ambient.g = parseFloat(ambient[1]);
 		material.ambient.b = parseFloat(ambient[2]);
 		
 		var diffuse = xmlMaterial.getAttribute( "Diffuse" ).split(' ');
+		diffuse = diffuse.map( parseFloat );
 		material.color.r = parseFloat(diffuse[0]);
 		material.color.g = parseFloat(diffuse[1]);
 		material.color.b = parseFloat(diffuse[2]);
 		
 		var specular = xmlMaterial.getAttribute( "Specular" ).split(' ');
+		specular = specular.map( parseFloat );
 		material.specular.r = parseFloat(specular[0]);
 		material.specular.g = parseFloat(specular[1]);
 		material.specular.b = parseFloat(specular[2]);
@@ -144,6 +148,7 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 		if ( tex )
 		{
 			material.map = THREE.ImageUtils.loadTexture( texturePath + '/' + tex.getAttribute("Name") );
+			material.map.flipY = false;
 		}
 		
 		return material;
@@ -176,21 +181,21 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 		}
 	
 		// VERTICES
-		var vertices = xmlMesh.querySelector( "Attribute[Name='Position']" ).getAttribute( "Data" ).split(' ');
+		var vertices = xmlMesh.querySelector( "Attribute[Name='Position']" ).getAttribute( "Data" ).split(' ').map( parseFloat );
 		for ( var i=0 ; i<vertices.length ; i+=3 )
 		{
-			geometry.vertices.push( new THREE.Vector3( parseFloat(vertices[i]), parseFloat(vertices[i+1]), parseFloat(vertices[i+2]) ) );
+			geometry.vertices.push( new THREE.Vector3( vertices[i], vertices[i+1], vertices[i+2] ) );
 		}
 		
 		// NORMALS
 		var xmlNormal = xmlMesh.querySelector( "Attribute[Name='Normal']" );
 		if ( xmlNormal )
 		{
-			var normals = xmlNormal.getAttribute( "Data" ).split(' ');
+			var normals = xmlNormal.getAttribute( "Data" ).split(' ').map( parseFloat );
 			geometry.normals = [];
 			for ( var i=0 ; i<normals.length ; i+=3 )
 			{
-				geometry.normals.push( new THREE.Vector3( parseFloat(normals[i]), parseFloat(normals[i+1]), parseFloat(normals[i+2]) ) );
+				geometry.normals.push( new THREE.Vector3( normals[i], normals[i+1], normals[i+2] ) );
 			}
 		}
 		
@@ -198,11 +203,11 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 		var texcoord1 = xmlMesh.querySelector( "Attribute[Name='Texcoord1']" );
 		if ( texcoord1 )
 		{
-			var uvs = texcoord1.getAttribute( "Data" ).split(' ');
+			var uvs = texcoord1.getAttribute( "Data" ).split(' ').map( parseFloat );
 			geometry.uvs = [];
 			for ( var i=0 ; i<uvs.length ; i+=2 )
 			{
-				geometry.uvs.push( new THREE.UV( parseFloat(uvs[i]), 1-parseFloat(uvs[i+1]) ) );
+				geometry.uvs.push( new THREE.UV( uvs[i], uvs[i+1] ) );
 			}
 		}
 
@@ -211,16 +216,16 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 		var xmlIndices = xmlMesh.querySelector( "Index[Name='Default']" );
 		if ( xmlIndices )
 		{
-			indices = xmlIndices.getAttribute( "Data" ).split(' ');
+			indices = xmlIndices.getAttribute( "Data" ).split(' ').map( parseFloat );
 		}
 		else
 		{
-			indices = xmlMesh.querySelector( "FaceIndex" ).getAttribute( "Data" ).split(' ');
+			indices = xmlMesh.querySelector( "FaceIndex" ).getAttribute( "Data" ).split(' ').map( parseFloat );
 		}
 		var n = 0;
 		for ( var i=0 ; i<indices.length ; i+=3 )
 		{
-			geometry.faces.push( new THREE.Face3( parseFloat(indices[i]), parseFloat(indices[i+1]), parseFloat(indices[i+2]), geometry.normals[n], null, materialId ) );
+			geometry.faces.push( new THREE.Face3( indices[i], indices[i+1], indices[i+2], geometry.normals[n], null, materialId ) );
 			if ( texcoord1 )
 			{
 				geometry.faceVertexUvs[0].push( [ geometry.uvs[indices[i]], geometry.uvs[indices[i+1]], geometry.uvs[indices[i+2]] ] );
@@ -234,30 +239,26 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 			parseSkin( xmlMesh.querySelector( "Skin" ), geometry );
 			
 			// SKININDEX
+			// SKINWEIGHT
 			var xmlBoneIndex = xmlMesh.querySelector( "Attribute[Name='BoneIndex']" );
-			if ( xmlBoneIndex )
+			var xmlBoneWeight = xmlMesh.querySelector( "Attribute[Name='BoneWeight']" );
+			if ( xmlBoneIndex && xmlBoneWeight )
 			{
 				var bi = xmlBoneIndex.getAttribute( "Data" ).split(' ');
+				var bw = xmlBoneWeight.getAttribute( "Data" ).split(' ');
+				bi = bi.map( parseFloat );
+				bw = bw.map( parseFloat );
 				for ( var i=0 ; i < bi.length ; i+=4 )
 				{
-					var si0 = treatSkinIndex( parseFloat(bi[0]) );
-					var si1 = treatSkinIndex( parseFloat(bi[1]) );
-					var si2 = treatSkinIndex( parseFloat(bi[2]) );
-					var si3 = treatSkinIndex( parseFloat(bi[3]) );
+					var si0 = treatSkinIndex( bi[i  ] );
+					var si1 = treatSkinIndex( bi[i+1] );
+					//var si2 = treatSkinIndex( bi[i+2] );
+					//var si3 = treatSkinIndex( bi[i+3] );
 					//geometry.skinIndices.push( new THREE.Vector4( si0, si1, si2, si3 ) );
-					geometry.skinIndices.push( new THREE.Vector4( si0, si1, 0, 0 ) );
-				}
-			}
-			
-			// SKINWEIGHT
-			var xmlBoneWeight = xmlMesh.querySelector( "Attribute[Name='BoneWeight']" );
-			if ( xmlBoneWeight )
-			{
-				var bw = xmlBoneWeight.getAttribute( "Data" ).split(' ');
-				for ( var i=0 ; i < bw.length ; i+=4 )
-				{
-					//geometry.skinWeights.push( new THREE.Vector4( parseFloat(bw[0]), parseFloat(bw[1]), parseFloat(bw[2]), parseFloat(bw[3]) ) );
-					geometry.skinWeights.push( new THREE.Vector4( parseFloat(bw[0]), parseFloat(bw[1]), 0, 0 ) );
+					geometry.skinIndices.push( new THREE.Vector4( si0, si1, -1, -1 ) );
+
+					//geometry.skinWeights.push( new THREE.Vector4( bw[i], bw[i+1], bw[i+2], bw[i+3] ) );
+					geometry.skinWeights.push( new THREE.Vector4( bw[i], bw[i+1], 0, 0 ) );
 				}
 			}
 		}
@@ -302,12 +303,12 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 		{
 			var bone = {};
 			bone.name = xmlBones[i].getAttribute( "Name" );
-			var im = xmlBones[i].getAttribute( "InitMatrix" ).split(' ');
+			bone.parent = -1;
 
+			var im = xmlBones[i].getAttribute( "InitMatrix" ).split(' ');
 			bone.initMatrix = new THREE.Matrix4( im[0],im[3],im[6],im[9], im[1],im[4],im[7],im[10], im[2],im[5],im[8],im[11], 0,0,0,1 );
 			bone.invInitMatrix = new THREE.Matrix4().getInverse( bone.initMatrix );
 
-			bone.parent = -1;
 			bone.pos = [ 0, 0, 0 ];
 			bone.rotq = [ 0, 0, 0, 1 ];
 			bone.scl = [ 1,1,1 ];

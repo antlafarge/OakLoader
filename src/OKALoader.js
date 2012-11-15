@@ -100,40 +100,36 @@ THREE.OKALoader.prototype.createAnimation = function ( xml, animName, callback )
 	
 	var xmlBoneList = xml.querySelector( "BoneList" );
 	var xmlBones = xmlBoneList.querySelectorAll( "Bone" );
-	for ( var i=0 ; i < xmlBones.length ; i++ )
+	for ( var b=0 ; b < xmlBones.length ; b++ )
 	{
-		var xmlBone = xmlBones[i];
+		var xmlBone = xmlBones[ b ];
 		var bone = {};
 		bone.name = xmlBone.getAttribute( "Name" );
-		bone.parent = getBoneIdFromName( xmlBone.getAttribute( "Parent" ) );
+		bone.parent = xmlBone.getAttribute( "Parent" );
 		bone.keys = [];
 		var xmlKeys = xmlBone.querySelectorAll( "Key" );
-		for ( var j=0 ; j < xmlKeys.length ; j++ )
+		for ( var k=0 ; k < xmlKeys.length ; k++ )
 		{
-			var xmlKey = xmlKeys[j];
+			var xmlKey = xmlKeys[ k ];
 			var key = {};
-			key.index = bone.keys.length;
 			key.time = parseFloat( xmlKey.getAttribute( "Time" ) ) * tick / 1000;
-			var tra = xmlKey.getAttribute( "Translation" ).split(' ');
-			key.pos = [ parseFloat(tra[0]), parseFloat(tra[1]), parseFloat(tra[2]) ];
-			var rot = xmlKey.getAttribute( "Rotation" ).split(' ');
-			key.rot = new THREE.Quaternion( parseFloat(rot[0]), parseFloat(rot[1]), parseFloat(rot[2]), parseFloat(rot[3]) );
-			key.scl = [ 1, 1, 1 ];
+			var tra = xmlKey.getAttribute( "Translation" ).split(' ').map( parseFloat );
+			var rot = xmlKey.getAttribute( "Rotation" ).split(' ').map( parseFloat );
+			var scl = xmlKey.getAttribute( "Scale" ).split(' ').map( parseFloat );
+			tra.map( parseFloat );
+			rot.map( parseFloat );
+			key.pos = [ tra[0], tra[1], tra[2] ];
+			key.rot = new THREE.Quaternion( rot[1], rot[2], rot[3], rot[0] );
+			key.scl = [ scl[0], scl[1], scl[2] ];
 			bone.keys.push( key );
 		}
 		anim.hierarchy.push( bone );
 	}
-	
-	function getBoneIdFromName( name )
+
+	for( var b=0 ; b < anim.hierarchy.length ; b++ )
 	{
-		for ( var i=0 ; i < anim.hierarchy.length ; i++ )
-		{
-			if ( anim.hierarchy[i].name == name )
-			{
-				return i;
-			}
-		}
-		return -1;
+		var bone = anim.hierarchy[ b ];
+		bone.parent = getBoneIdFromName( anim.hierarchy, bone.parent );
 	}
 	
 	callback( anim );

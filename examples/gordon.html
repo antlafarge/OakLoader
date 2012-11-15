@@ -72,17 +72,6 @@
 
 					combi = object3d.children[0];
 					head = object3d.children[1];
-
-					var gordonGeometry = new THREE.Geometry();
-					AnimationUtils.merge( gordonGeometry, combi.geometry );
-					AnimationUtils.merge( gordonGeometry, head.geometry );
-					gordon = new THREE.SkinnedMesh( gordonGeometry, new THREE.MeshFaceMaterial() );
-					gordon.name = gordonGeometry.name;
-
-					combi.geometry.materials[0].transparent = true;
-					combi.geometry.materials[0].opacity = 0.5;
-					head.geometry.materials[0].transparent = true;
-					head.geometry.materials[0].opacity = 0.5;
 					
 					modelLoaded = true;
 					if ( animLoaded )
@@ -92,7 +81,7 @@
 				}
 				
 				var modelLoader = new THREE.OKMLoader();
-				modelLoader.load( "models/gordon2.OKM", processModel, "textures" );
+				modelLoader.load( "models/gordon.OKM", processModel, "textures" );
 				
 				function processAnim( animJson )
 				{
@@ -110,20 +99,32 @@
 				
 				function processAll()
 				{
-					AnimationUtils.retrieveParents( gordon.geometry, anim );
+					var gordonGeometry = new THREE.Geometry();
+					AnimationUtils.merge( gordonGeometry, combi.geometry );
+					AnimationUtils.merge( gordonGeometry, head.geometry );
+					AnimationUtils.retrieveParents( gordonGeometry, anim );
+					gordon = new THREE.SkinnedMesh( gordonGeometry, new THREE.MeshFaceMaterial() );
+					gordon.name = gordonGeometry.name;
+
+					combi.geometry.materials[0].transparent = true;
+					combi.geometry.materials[0].opacity = 0.5;
+					head.geometry.materials[0].transparent = true;
+					head.geometry.materials[0].opacity = 0.5;
 
 					var skeleton = AnimationUtils.createSkeleton( gordon, 0.5 );
-
 
 					scene.add( gordon );
 					scene.add( skeleton );
 					
-					animation = new THREE.Animation( object3d, "gordon_idle" );
-					//animation.play();
+					animation = new THREE.Animation( gordon, "gordon_idle" );
+					animation2 = new THREE.Animation( skeleton, "gordon_idle" );
 
 					console.log( "gordon", gordon );
 					console.log( "skeleton", skeleton );
 					console.log( "Animation", animation );
+
+					animation.play();
+					animation2.play();
 				}
 				
 				var animLoader = new THREE.OKALoader();
