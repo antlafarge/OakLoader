@@ -1,14 +1,16 @@
 #OAKLoader
 
+Demos : http://ant-lafarge.github.com/OakLoader/  
+
 A Oak3D model loader for three.js with animated skinned mesh support  
 
 Implemented functionnalities :  
-- OKM loader
-- OKA loader
-- Convert OKM skeleton from OKA hierarchy
+- Model loader (OKM)
+- Animation loader (OKA)
+- Convert OKM skeleton to three.js skeleton (with OKA hierarchy)
 - Skeleton visualisation
 - Wireframe visualisation
-- Bones merge
+- Merge skinned meshes
 
 Todo :  
 - Binary loader
