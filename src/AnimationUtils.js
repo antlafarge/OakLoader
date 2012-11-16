@@ -140,6 +140,20 @@ AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
 	return skeleton;
 }
 
+AnimationUtils.processSkinnedMesh = function( object3d, anim )
+{
+	var geometry = new THREE.Geometry();
+	for ( var i=0 ; i < object3d.children.length ; i++ )
+	{
+		if ( object3d.children[ i ] instanceof THREE.SkinnedMesh )
+			AnimationUtils.merge( geometry, object3d.children[ i ].geometry );
+	}
+	AnimationUtils.retrieveParents( geometry, anim );
+	var mesh = new THREE.SkinnedMesh( geometry, new THREE.MeshFaceMaterial() );
+	mesh.name = geometry.name;
+	return mesh;
+}
+
 AnimationUtils.merge = function( geometry1, geometry2 )
 {
 	THREE.GeometryUtils.merge( geometry1, geometry2 );
@@ -202,7 +216,7 @@ AnimationUtils.mergeBones = function( geometry1, geometry2 )
 	geometry1.skinWeights = geometry1.skinWeights.concat( geometry2.skinWeights );
 }
 
-AnimationUtils.retrieveParents = function( geometry, anim, ske )
+AnimationUtils.retrieveParents = function( geometry, anim )
 {
 	var lastBones = geometry.bones;
 

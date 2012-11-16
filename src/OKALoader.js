@@ -113,14 +113,26 @@ THREE.OKALoader.prototype.createAnimation = function ( xml, animName, callback )
 			var xmlKey = xmlKeys[ k ];
 			var key = {};
 			key.time = parseFloat( xmlKey.getAttribute( "Time" ) ) * tick / 1000;
+
 			var tra = xmlKey.getAttribute( "Translation" ).split(' ').map( parseFloat );
-			var rot = xmlKey.getAttribute( "Rotation" ).split(' ').map( parseFloat );
-			var scl = xmlKey.getAttribute( "Scale" ).split(' ').map( parseFloat );
 			tra.map( parseFloat );
-			rot.map( parseFloat );
 			key.pos = [ tra[0], tra[1], tra[2] ];
+
+			var rot = xmlKey.getAttribute( "Rotation" ).split(' ').map( parseFloat );
+			rot.map( parseFloat );
 			key.rot = new THREE.Quaternion( rot[1], rot[2], rot[3], rot[0] );
-			key.scl = [ scl[0], scl[1], scl[2] ];
+
+			var scl = xmlKey.getAttribute( "Scale" );
+			if ( scl )
+			{
+				scl = scl.split(' ').map( parseFloat );	
+				key.scl = [ scl[0], scl[1], scl[2] ];
+			}
+			else
+			{
+				key.scl = [ 1,1,1 ];
+			}
+			
 			bone.keys.push( key );
 		}
 		anim.hierarchy.push( bone );

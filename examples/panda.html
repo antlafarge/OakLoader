@@ -16,6 +16,7 @@
 
 		<script src="js/three.js"></script>
 		<script src="js/TrackballControls.js"></script>
+		<script src="../src/AnimationUtils.js"></script>
 		<script src="../src/OKMLoader.js"></script>
 		<script src="../src/OKALoader.js"></script>
 		
@@ -30,7 +31,7 @@
 
 			var camera, controls, scene, renderer;
 			
-			var object3d, animation;
+			var object3d, panda, skeleton, anim, animation, animation2;
 			
 			var modelLoaded = false;
 			var animLoaded = false;
@@ -70,41 +71,52 @@
 				function processModel( obj )
 				{
 					object3d = obj;
-					scene.add( object3d );
-					modelLoaded = true;
 					
 					console.log( "Object3D", object3d );
 					
 					modelLoaded = true;
 					if ( animLoaded )
 					{
-						launchAnim();
+						processAll();
 					}
 				}
 				
 				var modelLoader = new THREE.OKMLoader();
 				modelLoader.load( "models/panda.xml", processModel );
 				
-				function processAnim( anim )
+				function processAnim( obj )
 				{
-					/*THREE.AnimationHandler.add( anim );
-					
+					anim = obj;
+
 					console.log( "anim", anim );
+					
+					THREE.AnimationHandler.add( anim );
 					
 					animLoaded = true;
 					if ( modelLoaded )
 					{
-						launchAnim();
-					}*/
+						processAll();
+					}
 				}
 				
-				function launchAnim()
+				function processAll()
 				{
-					/*animation = new THREE.Animation( object3d, "panda_walk" );
-					//animation.offset = 0.05 * Math.random();
+					panda = AnimationUtils.processSkinnedMesh( object3d, anim );
+					console.log( "panda", panda );
+					scene.add( panda );
+
+					animation = new THREE.Animation( panda, "panda_walk" );
 					console.log( "Animation", animation );
-					animation.loop = false;
-					animation.play();*/
+					animation.play();
+
+					skeleton = AnimationUtils.createSkeleton( panda );
+					console.log( "skeleton", skeleton );
+					scene.add( skeleton );
+
+					animation2 = new THREE.Animation( skeleton, "panda_walk" );
+					console.log( "Animation", animation );
+					animation2.play();
+
 				}
 				
 				var animLoader = new THREE.OKALoader();

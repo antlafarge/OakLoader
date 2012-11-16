@@ -32,7 +32,7 @@
 			var camera, controls, scene, renderer;
 			
 			var anim, animation;
-			var object3d, gordon, combi, head;
+			var object3d, gordon;
 			
 			var modelLoaded = false;
 			var animLoaded = false;
@@ -69,10 +69,9 @@
 				function processModel( myObject3d )
 				{
 					object3d = myObject3d;
-
-					combi = object3d.children[0];
-					head = object3d.children[1];
 					
+					console.log( "object3d", object3d );
+
 					modelLoaded = true;
 					if ( animLoaded )
 					{
@@ -86,9 +85,10 @@
 				function processAnim( animJson )
 				{
 					anim = animJson;
-					THREE.AnimationHandler.add( anim );
 					
 					console.log( "anim", anim );
+
+					THREE.AnimationHandler.add( anim );
 					
 					animLoaded = true;
 					if ( modelLoaded )
@@ -99,17 +99,12 @@
 				
 				function processAll()
 				{
-					var gordonGeometry = new THREE.Geometry();
-					AnimationUtils.merge( gordonGeometry, combi.geometry );
-					AnimationUtils.merge( gordonGeometry, head.geometry );
-					AnimationUtils.retrieveParents( gordonGeometry, anim );
-					gordon = new THREE.SkinnedMesh( gordonGeometry, new THREE.MeshFaceMaterial() );
-					gordon.name = gordonGeometry.name;
+					gordon = AnimationUtils.processSkinnedMesh( object3d, anim );
 
-					combi.geometry.materials[0].transparent = true;
-					combi.geometry.materials[0].opacity = 0.5;
-					head.geometry.materials[0].transparent = true;
-					head.geometry.materials[0].opacity = 0.5;
+					gordon.geometry.materials[0].transparent = true;
+					gordon.geometry.materials[0].opacity = 0.5;
+					gordon.geometry.materials[1].transparent = true;
+					gordon.geometry.materials[1].opacity = 0.5;
 
 					var skeleton = AnimationUtils.createSkeleton( gordon, 0.5 );
 
