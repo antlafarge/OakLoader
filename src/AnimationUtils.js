@@ -4,6 +4,17 @@
 
 AnimationUtils = {};
 
+AnimationUtils.cube = 0;
+AnimationUtils.sphere = 1;
+AnimationUtils.arrow = 2;
+
+AnimationUtils.boneColor = 0xff0000;
+AnimationUtils.linkColor = 0xffff00;
+AnimationUtils.wireColor = 0xffffff;
+AnimationUtils.wireOpacity = 0.2;
+AnimationUtils.boneSize = 0.1;
+AnimationUtils.boneType = AnimationUtils.sphere;
+
 AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
 {
 	if ( boneScale == null )
@@ -24,7 +35,6 @@ AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
 	for ( var i=0 ; i < skinnedMesh.geometry.bones.length ; i++ )
 	{
 		var bone = skinnedMesh.geometry.bones[ i ];
-		var parent = skinnedMesh.geometry.bones[ bone.parent ];
 
 		var obj = new THREE.Object3D();
 		obj.name = bone.name;
@@ -59,7 +69,7 @@ AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
 	skeletonGeometry.bones = [];
 	skeletonGeometry.skinIndices = [];
 	skeletonGeometry.skinWeights = [];
-	skeletonGeometry.materials.push( new THREE.MeshLambertMaterial( { ambient:0xffffff, wireframe:true, skinning:true } ) );
+	skeletonGeometry.materials.push( new THREE.MeshLambertMaterial( { ambient:AnimationUtils.linkColor, wireframe:true, skinning:true } ) );
 
 	// Copy bones
 	for ( var i=0 ; i < skinnedMesh.bones.length ; i++ )
@@ -85,8 +95,23 @@ AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
 
 		// BONE
 		// Create and merge the bone as a shpere in the skeleton
-		var boneMesh = new THREE.Mesh( new THREE.SphereGeometry( boneScale,8,8 ), new THREE.MeshFaceMaterial() );
-		boneMesh.geometry.materials.push( new THREE.MeshLambertMaterial( {ambient:0xff0000, skinning:true} ) );
+		var boneMesh;
+		var bonesz = AnimationUtils.boneSize * boneScale;
+		switch ( AnimationUtils.boneType )
+		{
+			case AnimationUtils.cube:
+				boneMesh = new THREE.Mesh( new THREE.CubeGeometry( bonesz,bonesz,bonesz ), new THREE.MeshFaceMaterial() );
+				break;
+			case AnimationUtils.arrow:
+				boneMesh = new THREE.Mesh( new THREE.CylinderGeometry( 0,bonesz/2,2*bonesz, 8,1, false ), new THREE.MeshFaceMaterial() );
+				boneMesh.rotation.x = Math.PI;
+				break;
+			case AnimationUtils.sphere:
+			default:
+				boneMesh = new THREE.Mesh( new THREE.SphereGeometry( bonesz/2,8,8 ), new THREE.MeshFaceMaterial() );
+				break;
+		}
+		boneMesh.geometry.materials.push( new THREE.MeshLambertMaterial( {ambient:AnimationUtils.boneColor, skinning:true} ) );
 		for ( var i=0 ; i < boneMesh.geometry.faces.length ; i++ )
 		{
 			boneMesh.geometry.faces[ i ].materialIndex = 0;
@@ -138,6 +163,12 @@ AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
 	skeleton.name = skinnedMesh.name + "_skeleton";
 
 	return skeleton;
+}
+
+AnimationUtils.createWireframe = function( skinnedMesh )
+{
+	var material = new THREE.MeshLambertMaterial( { ambient:AnimationUtils.wireColor, opacity:AnimationUtils.wireOpacity, skinning:true, wireframe:true, transparent:true } );
+	return new THREE.SkinnedMesh( skinnedMesh.geometry, material );
 }
 
 AnimationUtils.processSkinnedMesh = function( object3d, anim )

@@ -12,6 +12,8 @@
 	</head>
 	<body>
 
+		<div id="info">buffalo example for <a href="http://github.com/ant-lafarge/OakLoader">OakLoader</a></div>
+
 		<div id="container"></div>
 
 		<script src="js/three.js"></script>
@@ -29,7 +31,7 @@
 
 			var camera, controls, scene, renderer;
 			
-			var buffalo, animation;
+			var buffalo, buffaloWire, animation;
 			var skeleton, animationSkeleton;
 			
 			var modelLoaded = false;
@@ -42,7 +44,7 @@
 			function init() {
 
 				camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 1000 );
-				camera.position.set( 200,200,200 );
+				camera.position.set( 150,50,200 );
 
 				controls = new THREE.TrackballControls( camera );
 				controls.rotateSpeed = 1.0;
@@ -50,15 +52,12 @@
 				controls.panSpeed = 0.8;
 				controls.dynamicDampingFactor = 0.3;
 				controls.keys = [ 65, 83, 68 ];
+				controls.target.set( 0,25,50 );
 
 				// world
 
 				scene = new THREE.Scene();
 				
-				var grid = new THREE.Mesh( new THREE.PlaneGeometry( 10, 10, 10, 10 ), new THREE.MeshBasicMaterial( { wireframe:true, color:0x000000 } ) );
-				grid.rotation.x = -Math.PI/2;
-				scene.add( grid );
-
 				// lights
 
 				light = new THREE.AmbientLight( 0xffffff );
@@ -89,10 +88,14 @@
 					THREE.AnimationHandler.add( geometry.animation );
 
 					buffalo = new THREE.SkinnedMesh( geometry, new THREE.MeshFaceMaterial(), false );
-					skeleton = AnimationUtils.createSkeleton( buffalo, 2 );
+					AnimationUtils.boneType = AnimationUtils.arrow;
+					skeleton = AnimationUtils.createSkeleton( buffalo, 40 );
 
 					animation = new THREE.Animation( buffalo, "take_001" );
 					animationSkeleton = new THREE.Animation( skeleton, "take_001" );
+
+					animation.timeScale = 0.25;
+					animationSkeleton.timeScale = 0.25;
 
 					console.log( "buffalo", buffalo );
 					console.log( "skeleton", skeleton );

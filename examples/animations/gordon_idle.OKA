@@ -4,45 +4,6 @@
     <BoneList Count="42">
         <Bone Name="Bip01" Parent="">
             <Key Time="0" Translation="0.235347 2.88438 0.235347" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="1" Translation="0.239254 2.87266 0.239254" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="2" Translation="0.24316 2.85313 0.24316" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="3" Translation="0.250973 2.83359 0.250973" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="4" Translation="0.258786 2.81015 0.258786" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="5" Translation="0.274411 2.78672 0.274411" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="6" Translation="0.28613 2.75937 0.28613" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="7" Translation="0.305662 2.72812 0.305662" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="8" Translation="0.321288 2.69687 0.321288" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="9" Translation="0.340819 2.66953 0.340819" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="10" Translation="0.364258 2.63827 0.364258" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="11" Translation="0.379883 2.60702 0.379883" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="12" Translation="0.403321 2.57968 0.403321" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="13" Translation="0.422853 2.55234 0.422853" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="14" Translation="0.446291 2.52499 0.446291" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="15" Translation="0.46973 2.50155 0.46973" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="16" Translation="0.489261 2.48202 0.489262" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="17" Translation="0.5127 2.46639 0.5127" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="18" Translation="0.532232 2.45467 0.532232" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="19" Translation="0.551763 2.44686 0.551763" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="20" Translation="0.571295 2.44686 0.571295" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="21" Translation="0.551763 2.44686 0.551763" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="22" Translation="0.532232 2.45467 0.532232" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="23" Translation="0.5127 2.46639 0.5127" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="24" Translation="0.489261 2.48202 0.489262" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="25" Translation="0.46973 2.50155 0.46973" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="26" Translation="0.446291 2.52499 0.446291" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="27" Translation="0.422853 2.55234 0.422853" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="28" Translation="0.403321 2.57968 0.403321" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="29" Translation="0.379883 2.60702 0.379883" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="30" Translation="0.364258 2.63827 0.364258" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="31" Translation="0.340819 2.66953 0.340819" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="32" Translation="0.321288 2.69687 0.321288" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="33" Translation="0.305662 2.72812 0.305662" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="34" Translation="0.28613 2.75937 0.28613" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="35" Translation="0.274411 2.78672 0.274411" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="36" Translation="0.258786 2.81015 0.258786" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="37" Translation="0.250973 2.83359 0.250973" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="38" Translation="0.24316 2.85313 0.24316" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
-            <Key Time="39" Translation="0.239254 2.87266 0.239254" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
             <Key Time="40" Translation="0.235347 2.88438 0.235347" Rotation="0.707079 -0 -0.707134 -0" Scale="1 1 1" />
         </Bone>
         <Bone Name="Bip01 Pelvis" Parent="Bip01">
