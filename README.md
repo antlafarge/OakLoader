@@ -1,7 +1,16 @@
 #OAKLoader
 
-A OAK3D model loader for three.js  
+Demos : http://ant-lafarge.github.com/OakLoader/  
 
-Actually, we can load a simple model (XML only, binary is not yet implemented).  
-I am working actually on the animation loader, so be patient !  
-I will push new examples to show the loader progression.
+A Oak3D model loader for three.js with animated skinned mesh support  
+
+Implemented functionnalities :  
+- Model loader (OKM)
+- Animation loader (OKA)
+- Convert OKM skeleton to three.js skeleton (with OKA hierarchy)
+- Skeleton visualisation
+- Wireframe visualisation
+- Merge skinned meshes
+
+Todo :  
+- Binary loader
