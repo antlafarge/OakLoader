@@ -271,10 +271,7 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 		}
 		
 		// Post-processing
-		if ( !xmlNormal )
-		{
-			geometry.computeFaceNormals();
-		}
+		geometry.computeFaceNormals();
 		geometry.computeCentroids();
 		geometry.computeBoundingBox();
 
