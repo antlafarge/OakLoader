@@ -23,7 +23,7 @@
 		<script src="../src/AnimationUtils.js"></script>
 		
 		<script src="js/Detector.js"></script>
-		<script src="js/Stats.js"></script>
+		<script src="js/stats.min.js"></script>
 		
 		<script>
 		
@@ -102,10 +102,10 @@
 					skeleton = AnimationUtils.createSkeleton( gordon, 8 );
 					gordonWire = AnimationUtils.createWireframe( gordon );
 
-					gordon.geometry.materials[0].transparent = true;
-					gordon.geometry.materials[0].opacity = 0.5;
-					gordon.geometry.materials[1].transparent = true;
-					gordon.geometry.materials[1].opacity = 0.5;
+					gordon.material.materials[0].transparent = true;
+					gordon.material.materials[0].opacity = 0.5;
+					gordon.material.materials[1].transparent = true;
+					gordon.material.materials[1].opacity = 0.5;
 
 					scene.add( gordon );
 					scene.add( gordonWire );
@@ -132,7 +132,8 @@
 
 				// renderer
 
-				renderer = new THREE.WebGLRenderer( { clearColor: 0x7f7f7f, clearAlpha: 1, antialias: true } );
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setClearColor(0x7f7f7f, 1);
 				renderer.setSize( window.innerWidth, window.innerHeight );
 
 				container = document.getElementById( 'container' );

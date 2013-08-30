@@ -29,7 +29,6 @@ AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
 	root.rotation.set( skinnedMesh.rotation.x, skinnedMesh.rotation.y, skinnedMesh.rotation.z );
 	root.quaternion.set( skinnedMesh.quaternion.x, skinnedMesh.quaternion.y, skinnedMesh.quaternion.z, skinnedMesh.quaternion.w );
 	root.scale.set( skinnedMesh.scale.x, skinnedMesh.scale.y, skinnedMesh.scale.z );
-	root.useQuaternion = true;
 
 	// Create Object3D
 	for ( var i=0 ; i < skinnedMesh.geometry.bones.length ; i++ )
@@ -45,7 +44,6 @@ AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
 		if ( bone.rotq )
 		{
 			obj.quaternion.set( bone.rotq[0], bone.rotq[1], bone.rotq[2], bone.rotq[3] );
-			obj.useQuaternion = true;
 		}
 		else
 		{
@@ -69,7 +67,8 @@ AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
 	skeletonGeometry.bones = [];
 	skeletonGeometry.skinIndices = [];
 	skeletonGeometry.skinWeights = [];
-	skeletonGeometry.materials.push( new THREE.MeshLambertMaterial( { ambient:AnimationUtils.linkColor, wireframe:true, skinning:true } ) );
+	var materials = [];
+	materials.push( new THREE.MeshLambertMaterial( { ambient:AnimationUtils.linkColor, wireframe:true, skinning:true } ) );
 
 	// Copy bones
 	for ( var i=0 ; i < skinnedMesh.bones.length ; i++ )
@@ -91,27 +90,28 @@ AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
 		// Retrieve the bone position
 		obj.updateMatrix();
 		obj.updateMatrixWorld();
-		var position = obj.matrixWorld.getPosition().clone();
+		var position = (new THREE.Vector3()).getPositionFromMatrix(obj.matrixWorld).clone();
 
 		// BONE
 		// Create and merge the bone as a shpere in the skeleton
 		var boneMesh;
 		var bonesz = AnimationUtils.boneSize * boneScale;
+		var boneMeshMaterials = [];
+		boneMeshMaterials.push( new THREE.MeshLambertMaterial( {ambient:AnimationUtils.boneColor, skinning:true} ) );
 		switch ( AnimationUtils.boneType )
 		{
 			case AnimationUtils.cube:
-				boneMesh = new THREE.Mesh( new THREE.CubeGeometry( bonesz,bonesz,bonesz ), new THREE.MeshFaceMaterial() );
+				boneMesh = new THREE.Mesh( new THREE.CubeGeometry( bonesz,bonesz,bonesz ), new THREE.MeshFaceMaterial(boneMeshMaterials) );
 				break;
 			case AnimationUtils.arrow:
-				boneMesh = new THREE.Mesh( new THREE.CylinderGeometry( 0,bonesz/2,2*bonesz, 8,1, false ), new THREE.MeshFaceMaterial() );
+				boneMesh = new THREE.Mesh( new THREE.CylinderGeometry( 0,bonesz/2,2*bonesz, 8,1, false ), new THREE.MeshFaceMaterial(boneMeshMaterials) );
 				boneMesh.rotation.x = Math.PI;
 				break;
 			case AnimationUtils.sphere:
 			default:
-				boneMesh = new THREE.Mesh( new THREE.SphereGeometry( bonesz/2,8,8 ), new THREE.MeshFaceMaterial() );
+				boneMesh = new THREE.Mesh( new THREE.SphereGeometry( bonesz/2,8,8 ), new THREE.MeshFaceMaterial(boneMeshMaterials) );
 				break;
 		}
-		boneMesh.geometry.materials.push( new THREE.MeshLambertMaterial( {ambient:AnimationUtils.boneColor, skinning:true} ) );
 		for ( var i=0 ; i < boneMesh.geometry.faces.length ; i++ )
 		{
 			boneMesh.geometry.faces[ i ].materialIndex = 0;
@@ -130,7 +130,7 @@ AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
 		{
 			// LINK
 			var child = obj.children[i];
-			var childPosition = child.matrixWorld.getPosition().clone();
+			var childPosition = (new THREE.Vector3()).getPositionFromMatrix(child.matrixWorld).clone();
 
 			var vl = skeletonGeometry.vertices.length;
 			skeletonGeometry.vertices.push( position.clone(), childPosition.clone() );
@@ -149,7 +149,7 @@ AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
 		treatChild( root.children[i] );
 	}
 
-	var changes = mergeIndexedArray( skeletonGeometry.materials, compareLambertMaterials );
+	var changes = mergeIndexedArray( materials, compareLambertMaterials );
 	for ( var i=0 ; i < skeletonGeometry.faces.length ; i++ )
 	{
 		var face = skeletonGeometry.faces[i];
@@ -159,7 +159,7 @@ AnimationUtils.createSkeleton = function( skinnedMesh, boneScale )
 		}
 	}
 
-	var skeleton = new THREE.SkinnedMesh( skeletonGeometry, new THREE.MeshFaceMaterial() );
+	var skeleton = new THREE.SkinnedMesh( skeletonGeometry, new THREE.MeshFaceMaterial(materials) );
 	skeleton.name = skinnedMesh.name + "_skeleton";
 
 	return skeleton;
@@ -174,20 +174,28 @@ AnimationUtils.createWireframe = function( skinnedMesh )
 AnimationUtils.processSkinnedMesh = function( object3d, anim )
 {
 	var geometry = new THREE.Geometry();
+	var materials = [];
+	var materialIndexOffset = 0;
 	for ( var i=0 ; i < object3d.children.length ; i++ )
 	{
-		if ( object3d.children[ i ] instanceof THREE.SkinnedMesh )
-			AnimationUtils.merge( geometry, object3d.children[ i ].geometry );
+		var mesh = object3d.children[i];
+		if (mesh instanceof THREE.SkinnedMesh)
+		{
+			AnimationUtils.merge( geometry, mesh.geometry, materialIndexOffset );
+			materials.push(mesh.material);
+			materialIndexOffset++;
+		}
 	}
 	AnimationUtils.retrieveParents( geometry, anim );
-	var mesh = new THREE.SkinnedMesh( geometry, new THREE.MeshFaceMaterial() );
+	var mesh = new THREE.SkinnedMesh( geometry, new THREE.MeshFaceMaterial(materials) );
 	mesh.name = geometry.name;
 	return mesh;
 }
 
-AnimationUtils.merge = function( geometry1, geometry2 )
+AnimationUtils.merge = function( geometry1, geometry2, materialIndexOffset )
 {
-	THREE.GeometryUtils.merge( geometry1, geometry2 );
+	if ( materialIndexOffset === undefined ) materialIndexOffset = 0;
+	THREE.GeometryUtils.merge( geometry1, geometry2, materialIndexOffset );
 	AnimationUtils.mergeBones( geometry1, geometry2 );
 	if ( geometry2.name.length )
 	{
@@ -292,7 +300,7 @@ AnimationUtils.retrieveParents = function( geometry, anim )
 		if ( parent )
 		{
 			bone.mat = parent.initMatrix.clone();
-			bone.mat.multiplySelf( bone.invInitMatrix );
+			bone.mat.multiply( bone.invInitMatrix );
 		}
 		else
 		{
@@ -302,7 +310,8 @@ AnimationUtils.retrieveParents = function( geometry, anim )
 		// Extract components
 		var pos = new THREE.Vector3();
 		var rotq = new THREE.Quaternion();
-		bone.mat.decompose( pos, rotq );
+		var scl = new THREE.Vector3(1,1,1);
+		bone.mat.decompose( pos, rotq, scl );
 		bone.pos = [ pos.x, pos.y, pos.z ];
 		bone.rotq = [ rotq.x, rotq.y, rotq.z, rotq.w ];
 	}

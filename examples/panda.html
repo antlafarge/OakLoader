@@ -23,7 +23,7 @@
 		<script src="../src/OKALoader.js"></script>
 		
 		<script src="js/Detector.js"></script>
-		<script src="js/Stats.js"></script>
+		<script src="js/stats.min.js"></script>
 		
 		<script>
 		
@@ -71,8 +71,6 @@
 				{
 					object3d = obj;
 					
-					console.log( "Object3D", object3d );
-					
 					modelLoaded = true;
 					if ( animLoaded )
 					{
@@ -87,8 +85,6 @@
 				{
 					anim = obj;
 
-					console.log( "anim", anim );
-					
 					THREE.AnimationHandler.add( anim );
 					
 					animLoaded = true;
@@ -105,7 +101,7 @@
 					scene.add( panda );
 
 					animation = new THREE.Animation( panda, "panda_walk" );
-					console.log( "Animation", animation );
+					console.log( "panda_walk", animation );
 					animation.play();
 
 					skeleton = AnimationUtils.createSkeleton( panda, 20 );
@@ -113,9 +109,8 @@
 					scene.add( skeleton );
 
 					animation2 = new THREE.Animation( skeleton, "panda_walk" );
-					console.log( "Animation", animation );
+					console.log( "skeleton_walk", animation );
 					animation2.play();
-
 				}
 				
 				var animLoader = new THREE.OKALoader();
@@ -123,8 +118,9 @@
 
 				// renderer
 
-				renderer = new THREE.WebGLRenderer( { clearColor: 0x7f7f7f, clearAlpha: 1, antialias: false } );
+				renderer = new THREE.WebGLRenderer( { antialias: false } );
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setClearColor(0x7f7f7f, 1);
 
 				container = document.getElementById( 'container' );
 				container.appendChild( renderer.domElement );

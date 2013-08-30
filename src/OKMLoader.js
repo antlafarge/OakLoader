@@ -172,7 +172,6 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 		else
 		{
 			material = materials[ materialId ];
-			geometry.materials.push( material );
 			materialId = 0;
 			if ( skinning )
 			{
@@ -207,7 +206,7 @@ THREE.OKMLoader.prototype.createModel = function ( xml, callback, texturePath ) 
 			geometry.uvs = [];
 			for ( var i=0 ; i<uvs.length ; i+=2 )
 			{
-				geometry.uvs.push( new THREE.UV( uvs[i], uvs[i+1] ) );
+				geometry.uvs.push( new THREE.Vector2( uvs[i], uvs[i+1] ) );
 			}
 		}
 

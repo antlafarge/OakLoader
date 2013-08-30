@@ -21,7 +21,7 @@
 		<script src="../src/AnimationUtils.js"></script>
 		
 		<script src="js/Detector.js"></script>
-		<script src="js/Stats.js"></script>
+		<script src="js/stats.min.js"></script>
 		
 		<script>
 		
@@ -65,8 +65,9 @@
 
 				// renderer
 
-				renderer = new THREE.WebGLRenderer( { clearColor: 0x7f7f7f, clearAlpha: 1, antialias: false } );
+				renderer = new THREE.WebGLRenderer( { antialias: false } );
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setClearColor(0x7f7f7f, 1);
 
 				container = document.getElementById( 'container' );
 				container.appendChild( renderer.domElement );
@@ -77,9 +78,11 @@
 				stats.domElement.style.zIndex = 100;
 				container.appendChild( stats.domElement );
 
-				function processModel( geometry )
+				function processModel( geometry, materials )
 				{
-					var originalMaterial = geometry.materials[ 0 ];
+					console.log(geometry, materials);
+
+					var originalMaterial = materials[ 0 ];
 
 					originalMaterial.skinning = true;
 					originalMaterial.transparent = true;
@@ -87,7 +90,7 @@
 
 					THREE.AnimationHandler.add( geometry.animation );
 
-					buffalo = new THREE.SkinnedMesh( geometry, new THREE.MeshFaceMaterial(), false );
+					buffalo = new THREE.SkinnedMesh( geometry, new THREE.MeshFaceMaterial(materials), false );
 					AnimationUtils.boneType = AnimationUtils.arrow;
 					skeleton = AnimationUtils.createSkeleton( buffalo, 40 );
 
