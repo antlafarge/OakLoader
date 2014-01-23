@@ -1,6 +1,6 @@
 #OAKLoader
 
-Demos : http://ant-lafarge.github.com/OakLoader/  
+Demos : http://antlafarge.github.com/OakLoader/  
 
 A Oak3D model loader for three.js with animated skinned mesh support  
 
